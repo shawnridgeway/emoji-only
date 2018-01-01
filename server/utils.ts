@@ -30,9 +30,6 @@ function getRandomUserName() {
 }
 
 
-/* --- Message Utils --- */
-
-
 export {
   getUser,
   getRandomUserName

@@ -24,7 +24,7 @@ export interface ChatState {
 }
 
 class Chat extends Component<ChatProps, ChatState> {
-	private scrollCtrRef = React.createRef<HTMLDivElement>();
+	private scrollCtrRef: React.RefObject<HTMLDivElement>;
 
 	constructor(props: ChatProps) {
 		super(props);
@@ -35,6 +35,7 @@ class Chat extends Component<ChatProps, ChatState> {
 			messageSending: false,
 			messageSendError: false,
 		}
+		this.scrollCtrRef = React.createRef();
 	}
 
 	componentDidMount() {
@@ -63,11 +64,9 @@ class Chat extends Component<ChatProps, ChatState> {
 
 		// Listen for new messages
     Api.subscribeMessages()
-    		.then(message => {
-    			this.setState(prevState => ({
-		        messages: sortMessagesByCreatedAt([ ...prevState.messages, message ])
-		      }))
-    		})
+    	.then(messages => {
+    		messages.forEach(this.addNewMessage);
+    	})
 	}
 
   componentWillUnmount() {
@@ -79,6 +78,12 @@ class Chat extends Component<ChatProps, ChatState> {
   	if (prevState.messages.length !== this.state.messages.length) {
   		this.scrollMessageToBottom();
   	}
+  }
+
+  addNewMessage = (message: Message) => {
+  	this.setState(prevState => ({
+      messages: sortMessagesByCreatedAt([ ...prevState.messages, message ])
+    }))
   }
 
   scrollMessageToBottom = () => {
@@ -116,6 +121,7 @@ class Chat extends Component<ChatProps, ChatState> {
   render() {
     return (
       <ChatCtr>
+      	<ChatTitle>🔤👎🏽😃👍🏽</ChatTitle>
       	<ChatMessagesCtr ref={this.scrollCtrRef}>
       		<ChatMessages messages={this.state.messages} />
       	</ChatMessagesCtr>
@@ -140,7 +146,6 @@ export const ChatCtr = styled.div`
   max-height: 200rem;
   border-radius: .25rem;
   margin: 10vh auto;
-	background-color: ${props => props.theme.color.fg};
 
 	@media (max-width: 500px) {
 		width: 100vw;
@@ -150,6 +155,15 @@ export const ChatCtr = styled.div`
   	border-radius: 0;
   	margin: 0;
 	}
+`;
+
+export const ChatTitle = styled.div`
+	flex: 0 0 0;
+	padding-top: .5rem;
+	padding-bottom: .5rem;
+  background-color: ${props => props.theme.color.ui};
+  font-size: 1.5rem;
+  text-align: center;
 `;
 
 export const ChatInputCtr = styled.div`
@@ -163,6 +177,7 @@ export const ChatMessagesCtr = styled.div`
   padding-top: .5rem;
   padding-bottom: .5rem;
   overflow-y: auto;
+  background-color: ${props => props.theme.color.fg};
 `;
 
 export default Chat;

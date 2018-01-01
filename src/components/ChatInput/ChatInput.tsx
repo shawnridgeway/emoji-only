@@ -6,7 +6,7 @@ import emojiKeywords from 'emojis-keywords';
 
 // Project
 import EmojiSuggestionButton from '../EmojiSuggestionButton/EmojiSuggestionButton';
-import { onlyEmoji, getNonEmojiSubString, getStringAsChars } from '../../utils/utils';
+import { onlyEmoji, getNonEmojiSubString, getStringAsChars, bannedEmoji } from '../../utils/utils';
 import { Message, User } from '../../types';
 import UserContext from '../../contexts/UserContext/UserContext';
 
@@ -26,6 +26,7 @@ class ChatInput extends Component<ChatInputProps, ChatInputState> {
 	private inputRef: React.RefObject<HTMLInputElement>;
 	private readonly emojiSuggestionCount = 10;
 	private readonly minCharacterForSuggestions = 2;
+	private readonly arrowKeys = [37, 38, 39, 40];
 
 	constructor(props: ChatInputProps) {
 		super(props);
@@ -45,7 +46,7 @@ class ChatInput extends Component<ChatInputProps, ChatInputState> {
 	}
 
 	handleInputKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if ([37, 38, 39, 40].indexOf(e.keyCode) === -1) {
+		if (this.arrowKeys.indexOf(e.keyCode) === -1) {
 			return;
 		}
 		this.setState({
@@ -119,8 +120,8 @@ class ChatInput extends Component<ChatInputProps, ChatInputState> {
 			return [];
 		}
 		return emojiKeywords
-			.map((keyword, i) => (keyword.indexOf(subString) > -1 ? emojis[i] : ''))
-			.filter(emoji => emoji !== '')
+			.map((keyword, i) => keyword.indexOf(subString) > -1 ? emojis[i] : '')
+			.filter(emoji => emoji !== '' && bannedEmoji.indexOf(emoji) === -1)
 	}
 
 	renderSuggestions = () => {

@@ -1,5 +1,7 @@
 // 3p
 import io from 'socket.io-client';
+import { Observable, from, Observer, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 // Project 
 import { User, Message, RawMessage } from '../types';
@@ -13,6 +15,8 @@ const init = () => {
 }
 
 /* --- Helpers --- */
+const subjects: { [key: string]: Subject<any> } = {};
+
 const processJsonResponse = (res: Response) => {
   if (!res.ok) throw new Error();
   return res.json();
@@ -23,24 +27,49 @@ const makeJsonHeaders = () => ({
   'Content-Type': 'application/json'
 })
 
+const makeWsObservable = <ResponseType = void>(event: string) => {
+  return Observable.create((observer: Observer<ResponseType>) => {
+    try {
+      window.socket.on(event, (response: ResponseType) => {
+        observer.next(response);
+      })
+    }
+    catch (err) {
+      observer.error(err)
+    }
+
+    return () => {
+      window.socket.off(event);
+    }
+  });
+}
+
 const makeApiCall = <ResponseType = void>(url: string, options?: any): Promise<ResponseType> => {
   return fetch(url, options)
       .then(processJsonResponse) 
 }
 
-const makeWsListener = <ResponseType = void>(event: string): Promise<ResponseType> => {
-  return new Promise<ResponseType>((resolve, reject) => {
-    window.socket.on(event, (response: ResponseType) => {
-      resolve(response)
-    })
+const makeWsListener = <ResponseType = void>(event: string): Promise<Observable<ResponseType>> => {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!subjects[event]) {
+        const subject = new Subject<ResponseType>();
+        const observable = makeWsObservable<ResponseType>(event);
+        observable.subscribe(subject);
+        subjects[event] = subject;
+      }
+      resolve(subjects[event].asObservable());
+    }
+    catch (err) {
+      reject(err);
+    }
   })
 }
 
 const removeWsListener = (event: string): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
-    window.socket.off(event, () => {
-      resolve()
-    })
+  return new Promise((resolve, reject) => {
+    subjects[event].complete();
+    resolve();
   })
 }
 
@@ -86,7 +115,9 @@ const sendMessage = (message: string) => {
 
 const subscribeMessages = () => {
   return subscribe<RawMessage>('new-message')
-      .then(prepareMessage)
+      .then(rawMessages => rawMessages.pipe(
+        map(prepareMessage)
+      ))
 }
 
 const unsubscribeMessages = () => {

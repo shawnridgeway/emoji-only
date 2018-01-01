@@ -9,6 +9,11 @@ import { Message, RawMessage } from '../types';
 
 
 
+// Banned Emoji
+export const bannedEmoji = [
+	'🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯', '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹', '🇺', '🇻', '🇼', '🇽', '🇾', '🇿', '🇺🇳'
+];
+
 const emojiRegex = emojiRegexFactory();
 const splitter = new GraphemeSplitter();
 
