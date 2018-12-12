@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "Shawn",
+    "password": null,
+    "database": "emoji_chat",
+    "host": "127.0.0.1",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  },
+  "test": {
+    "username": "Shawn",
+    "password": null,
+    "database": "emoji_chat",
+    "host": "127.0.0.1",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  },
+  "production": {
+    "username": "Shawn",
+    "password": null,
+    "database": "emoji_chat",
+    "host": "127.0.0.1",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  }
+}
